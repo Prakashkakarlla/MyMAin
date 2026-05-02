@@ -17,6 +17,7 @@ import java.util.List;
 
 @SpringBootApplication
 @EnableCaching
+@org.springframework.scheduling.annotation.EnableAsync
 public class JobFreshApplication {
 
     public static void main(String[] args) {
