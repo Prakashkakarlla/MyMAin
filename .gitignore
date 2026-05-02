@@ -1,0 +1,23 @@
+# Environment
+.env
+*.env.local
+
+# Java
+target/
+*.class
+*.jar
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docker
+mysql/data/
+
+# Logs
+*.log
