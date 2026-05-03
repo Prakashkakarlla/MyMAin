@@ -2,6 +2,8 @@ package in.jobfresh.controller;
 
 import in.jobfresh.dto.ApiResponse;
 import in.jobfresh.dto.JobDTO;
+import in.jobfresh.model.Subscriber;
+import in.jobfresh.repository.SubscriberRepository;
 import in.jobfresh.service.JobService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 /**
  * Admin-only endpoints. All require ROLE_ADMIN (JWT).
@@ -22,6 +25,14 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final JobService jobService;
+    private final SubscriberRepository subscriberRepository;
+
+    /** GET /api/v1/admin/subscribers?active=true */
+    @GetMapping("/subscribers")
+    public ResponseEntity<ApiResponse<List<Subscriber>>> listSubscribers(
+            @RequestParam(defaultValue = "true") boolean active) {
+        return ResponseEntity.ok(ApiResponse.ok(subscriberRepository.findByActive(active)));
+    }
 
     /** GET /api/v1/admin/dashboard */
     @GetMapping("/dashboard")
