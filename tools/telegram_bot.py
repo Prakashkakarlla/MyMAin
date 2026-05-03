@@ -13,6 +13,7 @@ import os
 import json
 import re
 import requests
+from datetime import date, datetime
 from groq import Groq
 from dotenv import load_dotenv
 import telebot
@@ -162,6 +163,23 @@ def h(text) -> str:
     return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def relative_date(date_str: str) -> str:
+    """Convert ISO date/datetime string to Today / Yesterday / DD MMM YYYY."""
+    if not date_str:
+        return "—"
+    try:
+        d = datetime.fromisoformat(date_str[:19]).date()
+        today = date.today()
+        delta = (today - d).days
+        if delta == 0:
+            return "Today"
+        if delta == 1:
+            return "Yesterday"
+        return d.strftime("%d %b %Y")
+    except Exception:
+        return date_str[:10]
+
+
 def build_preview(job_data: dict) -> str:
     lines = ["📋 <b>FULL JOB PREVIEW</b>\n"]
 
@@ -267,6 +285,7 @@ def cmd_start(message):
         "1. Paste job description or JSON\n"
         "2. Review the full preview\n"
         "3. Tap ✅ Post Job\n\n"
+        "/jobs — last 10 posted jobs with status &amp; date\n"
         "/subscribers — list all active subscribers\n"
         "/cancel — cancel current job",
         parse_mode="HTML"
@@ -279,6 +298,44 @@ def cmd_cancel(message):
     json_buffers.pop(message.chat.id, None)
     buffer_status_msg.pop(message.chat.id, None)
     bot.reply_to(message, "❌ Cancelled.")
+
+
+@bot.message_handler(commands=["jobs"])
+def cmd_jobs(message):
+    try:
+        token = get_auth_token()
+        resp = requests.get(
+            f"{JOBFRESH_API_URL}/admin/jobs?page=0&size=10",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=15
+        )
+        resp.raise_for_status()
+        page = resp.json().get("data", {})
+        jobs = page.get("content", [])
+        total = page.get("totalElements", 0)
+
+        if not jobs:
+            bot.reply_to(message, "No jobs posted yet.")
+            return
+
+        lines = [f"📋 <b>Recent Jobs (Total: {total})</b>\n"]
+        for j in jobs:
+            status  = "🟢" if j.get("active") else "🔴"
+            posted  = relative_date(j.get("postedAt") or "")
+            salary  = h(j.get("salary") or "—")
+            lines.append(
+                f"{status} <b>{h(j['title'])}</b> — {h(j['company'])}\n"
+                f"   📍 {h(j.get('location','—'))}  💰 {salary}  🕐 {posted}\n"
+                f"   ID: <code>{j['id']}</code>\n"
+            )
+
+        text = "\n".join(lines)
+        if len(text) > 4000:
+            text = text[:3950] + "\n...<i>(truncated)</i>"
+        bot.send_message(message.chat.id, text, parse_mode="HTML")
+
+    except Exception as e:
+        bot.reply_to(message, f"❌ Failed: {str(e)[:200]}")
 
 
 @bot.message_handler(commands=["subscribers"])
@@ -298,10 +355,10 @@ def cmd_subscribers(message):
 
         lines = [f"👥 <b>Subscribers ({len(subs)})</b>\n"]
         for i, s in enumerate(subs, 1):
-            cat  = h(s.get("preferredCategory") or "Any")
-            date = (s.get("subscribedAt") or "")[:10]
+            cat   = h(s.get("preferredCategory") or "Any")
+            since = relative_date(s.get("subscribedAt") or "")
             lines.append(f"{i}. <code>{h(s['email'])}</code>")
-            lines.append(f"   Category: {cat}  |  Since: {date}")
+            lines.append(f"   Category: {cat}  |  Since: {since}")
 
         text = "\n".join(lines)
         if len(text) > 4000:
