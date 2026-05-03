@@ -23,7 +23,9 @@ const TYPE_STYLES = {
 }
 
 function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr)
+  if (!dateStr) return '—'
+  const utc = dateStr.endsWith('Z') ? dateStr : dateStr + 'Z'
+  const diff = Date.now() - new Date(utc)
   const days = Math.floor(diff / 86400000)
   if (days === 0) return 'Posted today'
   if (days === 1) return 'Posted yesterday'
