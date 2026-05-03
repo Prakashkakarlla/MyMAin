@@ -161,12 +161,14 @@ public class JobService {
     }
 
     @Transactional
-    @CacheEvict(value = "jobDetail", key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "jobDetail",  key = "#id"),
+        @CacheEvict(value = "categories", allEntries = true)
+    })
     public void deleteJob(Long id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Job", id));
-        job.setActive(false);
-        jobRepository.save(job);
+        jobRepository.delete(job);
     }
 
     public Page<JobDTO.Response> adminListJobs(int page, int size) {
