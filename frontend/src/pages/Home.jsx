@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { Search, Filter, ChevronLeft, ChevronRight, Mail, Zap, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
@@ -274,8 +275,11 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-800/50 py-8 text-center text-gray-600 text-sm">
-        © {new Date().getFullYear()} JobFresh.in — Fresh jobs, every day.
+      <footer className="border-t border-gray-800/50 py-8 text-center text-gray-600 text-sm space-y-2">
+        <div>© {new Date().getFullYear()} JobFresh.in — Fresh jobs, every day.</div>
+        <div>
+          <Link to="/privacy-policy" className="text-gray-500 hover:text-orange-400 transition-colors">Privacy Policy</Link>
+        </div>
       </footer>
     </div>
   )

@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import JobDetail from './pages/JobDetail'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('jf_token')
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/admin" element={
           <ProtectedRoute><AdminDashboard /></ProtectedRoute>
         } />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
