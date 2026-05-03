@@ -41,18 +41,26 @@ public class EmailService {
         log.info("Sending job alert to {} subscribers", subscribers.size());
 
         for (Subscriber sub : subscribers) {
-            // Filter by preference if set
-            if (sub.getPreferredCategory() != null
-                    && !sub.getPreferredCategory().isBlank()
-                    && !sub.getPreferredCategory().equalsIgnoreCase(job.getCategory())) {
+            // Filter by preference only when both subscriber pref and job category are set
+            String pref = sub.getPreferredCategory();
+            String jobCat = job.getCategory();
+            if (pref != null && !pref.isBlank()
+                    && jobCat != null && !jobCat.isBlank()
+                    && !normalize(pref).equals(normalize(jobCat))) {
+                log.info("Skipping {} — category mismatch: pref='{}' job='{}'", sub.getEmail(), pref, jobCat);
                 continue;
             }
             try {
                 sendJobAlertEmail(sub.getEmail(), job);
+                log.info("Job alert sent to {}", sub.getEmail());
             } catch (Exception e) {
                 log.error("Failed to send email to {}: {}", sub.getEmail(), e.getMessage());
             }
         }
+    }
+
+    private String normalize(String s) {
+        return s.toLowerCase().replaceAll("[\\s/\\-_]+", "");
     }
 
     private void sendJobAlertEmail(String to, Job job) throws MessagingException, UnsupportedEncodingException {
