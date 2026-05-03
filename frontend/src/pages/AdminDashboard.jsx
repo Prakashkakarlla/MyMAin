@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X, Briefcase, CheckCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X, Briefcase, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import CompanyLogo from '../components/CompanyLogo'
@@ -133,10 +133,20 @@ export default function AdminDashboard() {
     }
   }
 
+  async function toggleJob(id, currentlyActive) {
+    try {
+      await api.patch(`/admin/jobs/${id}/toggle`)
+      toast.success(currentlyActive ? 'Job deactivated' : 'Job activated')
+      fetchJobs(page)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Toggle failed')
+    }
+  }
+
   async function deleteJob(id) {
     if (!confirm('Delete this job?')) return
     try {
-      await api.delete(`/admin/jobs/${id}`)  // 204 No Content — no body
+      await api.delete(`/admin/jobs/${id}`)
       toast.success('Job deleted')
       fetchJobs(page)
     } catch (err) {
@@ -245,6 +255,11 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => toggleJob(job.id, job.active)}
+                                title={job.active ? 'Deactivate' : 'Activate'}
+                                className={`p-1.5 transition-colors rounded ${job.active ? 'text-green-400 hover:text-gray-500' : 'text-gray-500 hover:text-green-400'}`}>
+                          {job.active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                        </button>
                         <button onClick={() => openEdit(job)}
                                 className="p-1.5 text-gray-500 hover:text-brand-400 transition-colors rounded">
                           <Pencil size={14} />

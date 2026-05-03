@@ -161,6 +161,16 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = "jobDetail", key = "#id")
+    public boolean toggleActive(Long id) {
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job", id));
+        job.setActive(!job.isActive());
+        jobRepository.save(job);
+        return job.isActive();
+    }
+
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "jobDetail",  key = "#id"),
         @CacheEvict(value = "categories", allEntries = true)

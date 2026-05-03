@@ -76,6 +76,16 @@ public class AdminController {
     }
 
     /**
+     * PATCH /api/v1/admin/jobs/{id}/toggle
+     * → 200 OK with { active: true/false }
+     */
+    @PatchMapping("/jobs/{id}/toggle")
+    public ResponseEntity<ApiResponse<Boolean>> toggleJob(@PathVariable Long id) {
+        boolean active = jobService.toggleActive(id);
+        return ResponseEntity.ok(ApiResponse.ok(active ? "Job activated" : "Job deactivated", active));
+    }
+
+    /**
      * DELETE /api/v1/admin/jobs/{id}
      * → 204 No Content. No body. That's the standard.
      * → 404 if job doesn't exist.
