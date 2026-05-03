@@ -98,6 +98,22 @@ services:
         limits:
           memory: 30M
 
+  # ── Telegram Bot ─────────────────────────────────────────────────────────
+  telegram-bot:
+    build: ./tools
+    container_name: jf_telegram_bot
+    restart: unless-stopped
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      JOBFRESH_API_URL: ${JOBFRESH_API_URL:-https://api.jobfresh.in/api/v1}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@jobfresh.in}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
   # ── Certbot (for free SSL) ────────────────────────────────────────────────
   certbot:
     image: certbot/certbot
